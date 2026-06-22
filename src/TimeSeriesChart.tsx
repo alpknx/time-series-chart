@@ -8,6 +8,7 @@ import {
   YAxis,
   Tooltip,
   ResponsiveContainer,
+  Customized,
 } from 'recharts';
 
 export type DataPoint = {
@@ -244,6 +245,33 @@ export function TimeSeriesChart({ data = defaultData, height = 320 }: TimeSeries
             dot={(props: any) => <SquareDot {...props} fill="#A855F7" />}
             activeDot={(props: any) => <SquareActiveDot {...props} fill="#A855F7" />}
           />
+
+          {/* Bright overlay segment on green line inside yellow area (11.06→12.06) */}
+          <Customized component={(props: any) => {
+            const roiItem = props.formattedGraphicalItems?.find(
+              (item: any) => item.props?.dataKey === 'roi'
+            );
+            if (!roiItem) return null;
+            const pts = roiItem.props?.points;
+            if (!pts || pts.length < 5) return null;
+            const p2 = pts[2]; const p3 = pts[3]; const p4 = pts[4];
+            if (!p2 || !p3 || !p4) return null;
+            const mx = (p2.x + p3.x) / 2;
+            const my = (p2.y + p3.y) / 2;
+            const ex = p3.x + (p4.x - p3.x) * 0.28;
+            const ey = p3.y + (p4.y - p3.y) * 0.28;
+            const sw = chartHovered ? 2.5 : 5;
+            return (
+              <path
+                d={`M${mx},${my} Q${p3.x},${p3.y} ${ex},${ey}`}
+                stroke="#CFE07D"
+                strokeWidth={sw}
+                fill="none"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            );
+          }} />
         </ComposedChart>
       </ResponsiveContainer>
     </div>
